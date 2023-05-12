@@ -1,11 +1,10 @@
+use crate::frame::Frame;
 use crossterm::{
     cursor::MoveTo,
     style::{Color, SetBackgroundColor},
     terminal::{Clear, ClearType},
     QueueableCommand,
 };
-
-use crate::frame::Frame;
 use std::io::{Stdout, Write};
 
 pub fn render(stdout: &mut Stdout, last_frame: &Frame, curr_frame: &Frame, force: bool) {
