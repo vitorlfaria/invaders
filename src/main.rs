@@ -6,11 +6,18 @@ use crossterm::{
 };
 use invaders::{
     frame::{self, new_frame, Drawable, Frame},
+    invaders::Invaders,
     player::Player,
     render::render,
 };
 use rusty_audio::Audio;
-use std::{error::Error, io, sync::mpsc, thread, time::Duration};
+use std::{
+    error::Error,
+    io,
+    sync::mpsc,
+    thread,
+    time::{Duration, Instant},
+};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut audio = Audio::new();
@@ -45,8 +52,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Game loop
     let mut player = Player::new();
+    let mut invaders = Invaders::new();
+    let mut instant = Instant::now();
 
     'gameloop: loop {
+        // Per frame init
+        let delta = instant.elapsed();
+        instant = Instant::now();
         let mut curr_frame = new_frame();
 
         // Input
@@ -55,6 +67,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                 match key_event.code {
                     KeyCode::Left => player.move_left(),
                     KeyCode::Right => player.move_right(),
+                    KeyCode::Enter | KeyCode::Char(' ') => {
+                        if player.shoot() {
+                            audio.play("shot")
+                        }
+                    }
                     KeyCode::Esc | KeyCode::Char('q') => {
                         audio.play("lose");
                         break 'gameloop;
@@ -64,8 +81,18 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
 
+        // Updates
+        player.update(delta);
+        let invaders_win = invaders.update(delta);
+
+        if invaders_win {
+            audio.play("lose");
+            break 'gameloop;
+        }
+
         //Draw and render
         player.draw(&mut curr_frame);
+        invaders.draw(&mut curr_frame);
         let _ = render_tx.send(curr_frame);
         thread::sleep(Duration::from_millis(1));
     }
