@@ -40,7 +40,7 @@ impl Invaders {
         }
     }
 
-    pub fn update(&mut self, delta: Duration) -> bool {
+    pub fn update(&mut self, delta: Duration) {
         self.move_timer.update(delta);
 
         if self.move_timer.ready {
@@ -71,9 +71,23 @@ impl Invaders {
                 }
             }
         }
+    }
 
-        let max_down = self.army.iter().map(|invader| invader.y).max().unwrap_or(0);
-        if max_down == NUM_ROWS - 1 {
+    pub fn reached_botton(&self) -> bool {
+        self.army.iter().map(|invader| invader.y).max().unwrap_or(0) >= NUM_ROWS - 1
+    }
+
+    pub fn all_killed(&self) -> bool {
+        self.army.len() == 0
+    }
+
+    pub fn kill_invader_at(&mut self, x: usize, y: usize) -> bool {
+        if let Some(idx) = self
+            .army
+            .iter()
+            .position(|invader| (invader.x == x) && (invader.y == y))
+        {
+            self.army.remove(idx);
             true
         } else {
             false
