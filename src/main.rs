@@ -9,6 +9,7 @@ use invaders::{
     invaders::Invaders,
     player::Player,
     render::render,
+    score::Score,
 };
 use rusty_audio::Audio;
 use std::{
@@ -53,6 +54,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Game loop
     let mut player = Player::new();
     let mut invaders = Invaders::new();
+    let mut score = Score::new();
     let mut instant = Instant::now();
 
     'gameloop: loop {
@@ -84,12 +86,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         // Updates
         player.update(delta);
         invaders.update(delta);
-        if player.detect_hits(&mut invaders) {
+        if player.detect_hits(&mut invaders, &mut score) {
             audio.play("explosion");
         }
 
         //Draw and render
-        let drawables: Vec<&dyn Drawable> = vec![&player, &invaders];
+        let drawables: Vec<&dyn Drawable> = vec![&player, &invaders, &score];
         for drawable in drawables {
             drawable.draw(&mut curr_frame);
         }
