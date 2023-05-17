@@ -22,8 +22,6 @@ impl Score {
 
 impl Drawable for Score {
     fn draw(&self, frame: &mut Frame) {
-        let score = self.score.to_string();
-        let formated_score = format!("Score: {}", score);
-        frame[self.x][self.y] = formated_score;
+        frame[self.x][self.y] = format!("Score: {}", self.score);
     }
 }
