@@ -1,6 +1,6 @@
 use crossterm::{
     cursor::{Hide, Show},
-    event::{self, Event, KeyCode},
+    event::{self, Event, KeyCode, KeyEventKind},
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
@@ -66,19 +66,21 @@ fn main() -> Result<(), Box<dyn Error>> {
         // Input
         while event::poll(Duration::default())? {
             if let Event::Key(key_event) = event::read()? {
-                match key_event.code {
-                    KeyCode::Left => player.move_left(),
-                    KeyCode::Right => player.move_right(),
-                    KeyCode::Enter | KeyCode::Char(' ') => {
-                        if player.shoot() {
-                            audio.play("shot")
+                if key_event.kind == KeyEventKind::Press {
+                    match key_event.code {
+                        KeyCode::Left => player.move_left(),
+                        KeyCode::Right => player.move_right(),
+                        KeyCode::Enter | KeyCode::Char(' ') => {
+                            if player.shoot() {
+                                audio.play("shot")
+                            }
                         }
+                        KeyCode::Esc | KeyCode::Char('q') => {
+                            audio.play("lose");
+                            break 'gameloop;
+                        }
+                        _ => {}
                     }
-                    KeyCode::Esc | KeyCode::Char('q') => {
-                        audio.play("lose");
-                        break 'gameloop;
-                    }
-                    _ => {}
                 }
             }
         }
