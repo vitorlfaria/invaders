@@ -11,7 +11,6 @@ use invaders::{
     render::render,
     score::Score,
 };
-use rusty_audio::Audio;
 use std::{
     error::Error,
     io,
@@ -21,12 +20,6 @@ use std::{
 };
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let mut audio = Audio::new();
-    audio.add("explosion", "src/sounds/explosion.wav");
-    audio.add("lose", "src/sounds/lose.wav");
-    audio.add("music", "src/sounds/music.mp3");
-    audio.add("shot", "src/sounds/shot.wav");
-
     // Terminal
     let mut stdout = io::stdout();
     terminal::enable_raw_mode()?;
@@ -70,15 +63,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                     match key_event.code {
                         KeyCode::Left => player.move_left(),
                         KeyCode::Right => player.move_right(),
-                        KeyCode::Enter | KeyCode::Char(' ') => {
-                            if player.shoot() {
-                                audio.play("shot")
-                            }
-                        }
-                        KeyCode::Esc | KeyCode::Char('q') => {
-                            audio.play("lose");
-                            break 'gameloop;
-                        }
+                        KeyCode::Enter | KeyCode::Char(' ') => player.shoot(),
+                        KeyCode::Esc | KeyCode::Char('q') => break 'gameloop,
                         _ => {}
                     }
                 }
@@ -88,9 +74,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         // Updates
         player.update(delta);
         invaders.update(delta);
-        if player.detect_hits(&mut invaders, &mut score) {
-            audio.play("explosion");
-        }
+        player.detect_hits(&mut invaders, &mut score);
 
         //Draw and render
         let drawables: Vec<&dyn Drawable> = vec![&player, &invaders, &score];
@@ -105,7 +89,6 @@ fn main() -> Result<(), Box<dyn Error>> {
             break 'gameloop;
         }
         if invaders.reached_botton() {
-            audio.play("lose");
             break 'gameloop;
         }
     }
@@ -113,7 +96,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Cleanup
     drop(render_tx);
     render_handle.join().unwrap();
-    audio.wait();
     stdout.execute(Show)?;
     stdout.execute(LeaveAlternateScreen)?;
     terminal::disable_raw_mode()?;

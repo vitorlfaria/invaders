@@ -35,12 +35,9 @@ impl Player {
         }
     }
 
-    pub fn shoot(&mut self) -> bool {
-        if self.shots.len() <= 2 {
+    pub fn shoot(&mut self) {
+        if self.shots.is_empty() {
             self.shots.push(Shot::new(self.x, self.y - 2));
-            true
-        } else {
-            false
         }
     }
 
